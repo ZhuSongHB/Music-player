@@ -4,7 +4,8 @@
         constructor(dom) {
             this.wrap = dom;   // 播放器的容器   用于加载listControl 模块
             this.dataList = []; //获取的数据
-            this.now = 0;    //歌曲索引
+            // this.now = 0;    //歌曲索引
+            this.indexObj = null;
             this.rotateTimer = null;    //旋转定时器
             this.deg = 0;  //旋转角度
         }
@@ -22,7 +23,8 @@
                 method: 'get',
                 success: (data) => {
                     this.dataList = data;       //获取的数据
-                    this.loadMusic(this.now);   //音乐加载
+                    this.indexObj = new player.controlIndex(data.length);
+                    this.loadMusic(this.indexObj.index);   //音乐加载
                     this.musicControl();       //控制音乐
                 },
                 error: () => {
@@ -32,7 +34,7 @@
         }
         loadMusic(index) {  //加载音乐
             player.render(this.dataList[index])   //渲染信息
-            player.music.load(this.dataList[this.now].audioSrc);
+            player.music.load(this.dataList[this.indexObj.index].audioSrc);
             //判断播放状态
             if (player.music.status == 'play') {
                 this.controlBtns[2].className = 'playing'
@@ -44,10 +46,8 @@
             //上一首
             this.controlBtns[1].addEventListener('touchend', () => {
                 this.deg = 0;
-                this.now--;
-                this.now = this.now < 0 ? 3 : this.now;
                 player.music.status = 'play';
-                musicPlayer.loadMusic(this.now);
+                musicPlayer.loadMusic(this.indexObj.prev());
                 player.music.play();
             })
             //开始 暂停
@@ -65,10 +65,8 @@
             //下一首
             this.controlBtns[3].addEventListener('touchend', () => {
                 this.deg = 0;
-                this.now++;
-                this.now = this.now > 3 ? 0 : this.now;
                 player.music.status = 'play';
-                musicPlayer.loadMusic(this.now);
+                musicPlayer.loadMusic(this.indexObj.next());
                 player.music.play();
             })
         }
